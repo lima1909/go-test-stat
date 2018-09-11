@@ -28,7 +28,7 @@ func (t Test) String() string {
 	return fmt.Sprintf("%s: %s -> %s", t.Name, t.Action, t.Result)
 }
 
-// Handle ...
+// Handle the json-byte-stream and interprete it to a result
 func Handle(b []byte) (Result, error) {
 	var r Result
 	var (
@@ -42,13 +42,14 @@ func Handle(b []byte) (Result, error) {
 			currentPackage = e.Package
 			r.Packages = append(r.Packages, &Package{Name: currentPackage})
 		}
-		// Tests
+		// create a new Tests
 		if e.Test != "" && e.Test != currentTest {
 			currentTest = e.Test
 			idx := len(r.Packages) - 1
 			packg := r.Packages[idx]
 			packg.Tests = append(packg.Tests, &Test{Name: currentTest, Action: e.Action})
 		} else if e.Test != "" {
+			// Test is to end, save the result
 			idx := len(r.Packages) - 1
 			packg := r.Packages[idx]
 			idx = len(packg.Tests) - 1

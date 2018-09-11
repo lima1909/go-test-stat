@@ -21,8 +21,8 @@ type TestEvent struct {
 
 type occurred func(e TestEvent)
 
-// Parse json bytes and unmarshal to Events
-func Parse(b []byte, occ occurred) error { // (TestEvents, error) {
+// Parse json bytes and unmarshal to TestEvents (fire func occured by every TestEvent)
+func Parse(b []byte, occ occurred) error {
 	scanner := bufio.NewScanner(strings.NewReader(string(b)))
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
