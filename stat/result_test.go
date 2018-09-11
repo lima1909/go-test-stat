@@ -47,3 +47,7 @@ func TestResult(t *testing.T) {
 		}
 	}
 }
+
+func TestSkip(t *testing.T) {
+	t.SkipNow()
+}
