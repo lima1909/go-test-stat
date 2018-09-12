@@ -23,7 +23,8 @@ type occurred func(e TestEvent)
 
 // Parse json bytes and unmarshal to TestEvents (fire func occured by every TestEvent)
 func Parse(b []byte, occ occurred) error {
-	scanner := bufio.NewScanner(strings.NewReader(string(b)))
+	jsonstr := strings.TrimSpace(string(b))
+	scanner := bufio.NewScanner(strings.NewReader(jsonstr))
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		var event TestEvent
