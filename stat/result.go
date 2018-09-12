@@ -42,11 +42,12 @@ func Handle(b []byte) (r Result, err error) {
 		test := packg.getTestByName(e.Test)
 		// create a new Tests
 		if e.Test != "" && test == nil {
-			test := &Test{Name: e.Test, Action: e.Action, Elapsed: e.Elapsed}
+			test = &Test{Name: e.Test, Action: e.Action}
 			packg.Tests = append(packg.Tests, test)
-		} else if e.Test != "" {
+		} else if e.Test != "" && (e.Action == actionPass || e.Action == actionFail || e.Action == actionSkip) {
 			// Test is to end, save the result
 			test.Result = e.Action
+			test.Elapsed = e.Elapsed
 		}
 	})
 }
