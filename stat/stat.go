@@ -87,9 +87,9 @@ func (o *Overview) Print() {
 // more than zero fails
 func (o *Overview) result() string {
 	if o.Fail() > 0 {
-		return "\U0001f44e"
+		return "\U0001f44e  \U0001f61f  \U0001f620"
 	}
-	return "\U0001f44d"
+	return "\U0001f44d  \U0001f603  \U0001f917"
 }
 
 // Packages without Tests
