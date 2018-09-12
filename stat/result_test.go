@@ -1,6 +1,9 @@
 package stat
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -48,6 +51,60 @@ func TestResult(t *testing.T) {
 	}
 }
 
+func TestNotJsonResult(t *testing.T) {
+	r, err := Handle([]byte("NOT JSON"))
+	if err == nil {
+		t.Errorf("err expected, but is %v", err)
+	}
+	if len(r.Packages) > 0 {
+		t.Errorf("no packages expected, got: %v", len(r.Packages))
+	}
+}
+
+// only for see the skip in the Overview
 func TestSkip(t *testing.T) {
 	t.SkipNow()
+}
+
+// test all JSON files from GOROOT - test2json dir
+func TestGoTest2JSON(t *testing.T) {
+	goroot, found := os.LookupEnv("GOROOT")
+	if found {
+		testdatadir := filepath.Join(goroot, "src", "cmd", "internal", "test2json", "testdata")
+		files, err := ioutil.ReadDir(testdatadir)
+		if err != nil {
+			t.Errorf("no err expected: %v", err)
+		}
+		for _, f := range files {
+			t.Run(f.Name(), func(t *testing.T) {
+				// test onl JSON-files
+				if filepath.Ext(f.Name()) == ".json" {
+					tf, err := os.Open(filepath.Join(testdatadir, f.Name()))
+					if err != nil {
+						t.Errorf("no err expected: %v", err)
+					}
+					defer tf.Close()
+
+					b, err := ioutil.ReadAll(tf)
+					if err != nil {
+						t.Errorf("no err expected: %v", err)
+					}
+					r, err := Handle(b)
+					if err != nil {
+						t.Errorf("no err expected: %v", err)
+					}
+					if len(r.Packages) == 0 {
+						t.Errorf("packaes expected: %v", len(r.Packages))
+					}
+					pckg := r.Packages[0]
+					if len(pckg.Tests) == 0 && f.Name() != "benchshort.json" {
+						t.Errorf("tests expected: %v", len(pckg.Tests))
+					}
+				}
+			})
+
+		}
+	} else {
+		t.Errorf("no env GOROOT set")
+	}
 }
