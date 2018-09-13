@@ -1,7 +1,6 @@
 package stat
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -38,7 +37,7 @@ func New() *Overview {
 }
 
 // Calculate stats based on the result
-func Calculate(r Result) *Overview {
+func Calculate(r Result) Overview {
 	overv := New()
 	overv.Packages = len(r.Packages)
 
@@ -71,40 +70,11 @@ func Calculate(r Result) *Overview {
 		}
 	}
 
-	return overv
+	return *overv
 }
 
-// Print the overview (all results)
-func (o *Overview) Print() {
-	// fmt.Printf("Tests: %v (Elapsed: %v)\n", o.Tests, o.Elapsed)
-	fmt.Printf("Tests: %v \n", o.Tests)
-	fmt.Printf("Pass|Fail|Skip: %v | %v | %v\n", o.Pass(), o.Fail(), o.Skip())
-	fmt.Printf("-> %s\n", o.result())
-	fmt.Printf("Elapsed: %v\n", o.Elapsed)
-	fmt.Printf("Packages without Tests: %v\n", o.emptyPackages())
-}
-
-const (
-	red    = 31
-	green  = 32
-	yellow = 33
-)
-
-func color(str string, color int) string {
-	return fmt.Sprintf("\x1b[1;%dm %s \x1b[0m", color, str)
-}
-
-// more than zero fails
-func (o *Overview) result() string {
-
-	if o.Fail() > 0 {
-		return "\U0001f44e  \U0001f61f  \U0001f620  \U0000274C  " + color("✖", red)
-	}
-	return "\U0001f44d  \U0001f603  \U0001f917  \U000023E9  " + color("✓", green)
-}
-
-// Packages without Tests
-func (o *Overview) emptyPackages() []string {
+// EmptyPackages Packages without Tests
+func (o Overview) EmptyPackages() []string {
 	names := make([]string, 0)
 	for k, v := range o.TestsPerPackage {
 		if v == 0 {
@@ -123,16 +93,25 @@ func count(m map[string]int) int {
 }
 
 // Pass is the sum of all succesfull test
-func (o *Overview) Pass() int {
+func (o Overview) Pass() int {
 	return count(o.TestsPerPackagePass)
 }
 
 // Fail is the sum of all failed test
-func (o *Overview) Fail() int {
+func (o Overview) Fail() int {
 	return count(o.TestsPerPackageFail)
 }
 
 // Skip is the sum of all skiped test
-func (o *Overview) Skip() int {
+func (o Overview) Skip() int {
 	return count(o.TestsPerPackageSkip)
+}
+
+// Percent calculate percent of all Tests (e.g. percent from Pass)
+func (o Overview) Percent(v int) int {
+	r := v * 100 / o.Tests
+	if r > 0 && r < 10 {
+		r = 10
+	}
+	return int(r) / 10
 }

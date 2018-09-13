@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/lima1909/go-test-stat/ioread"
+	"github.com/lima1909/go-test-stat/iowrite"
 	"github.com/lima1909/go-test-stat/stat"
 )
 
@@ -15,5 +16,5 @@ func main() {
 		panic(err)
 	}
 	o := stat.Calculate(r)
-	o.Print()
+	iowrite.Print(o)
 }
