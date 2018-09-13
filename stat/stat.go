@@ -109,6 +109,10 @@ func (o Overview) Skip() int {
 
 // Percent calculate percent of all Tests (e.g. percent from Pass)
 func (o Overview) Percent(v int) int {
+	if o.Tests == 0 {
+		return 0
+	}
+
 	r := v * 100 / o.Tests
 	if r > 0 && r < 10 {
 		r = 10
