@@ -84,12 +84,23 @@ func (o *Overview) Print() {
 	fmt.Printf("Packages without Tests: %v\n", o.emptyPackages())
 }
 
+const (
+	red    = 31
+	green  = 32
+	yellow = 33
+)
+
+func color(str string, color int) string {
+	return fmt.Sprintf("\x1b[1;%dm %s \x1b[0m", color, str)
+}
+
 // more than zero fails
 func (o *Overview) result() string {
+
 	if o.Fail() > 0 {
-		return "\U0001f44e  \U0001f61f  \U0001f620"
+		return "\U0001f44e  \U0001f61f  \U0001f620  \U0000274C  " + color("✖", red)
 	}
-	return "\U0001f44d  \U0001f603  \U0001f917"
+	return "\U0001f44d  \U0001f603  \U0001f917  \U000023E9  " + color("✓", green)
 }
 
 // Packages without Tests
