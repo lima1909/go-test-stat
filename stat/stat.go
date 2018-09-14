@@ -47,8 +47,8 @@ func Calculate(r Result) Overview {
 		overv.TestsPerPackageFail[pckg.Name] = 0
 		overv.TestsPerPackageSkip[pckg.Name] = 0
 
-		overv.Tests = len(pckg.Tests)
 		for _, t := range pckg.Tests {
+			overv.Tests++
 			overv.Elapsed = overv.Elapsed + t.Elapsed
 
 			val := overv.TestsPerPackage[pckg.Name]
