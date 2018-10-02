@@ -15,6 +15,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	o := stat.Calculate(r)
-	iowrite.Print(o)
+	s := stat.New(r)
+	iowrite.Print(s)
 }

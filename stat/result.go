@@ -2,6 +2,17 @@ package stat
 
 import "fmt"
 
+const (
+	actionRun    string = "run"
+	actionBench  string = "bench"
+	actionPass   string = "pass"
+	actionFail   string = "fail"
+	actionSkip   string = "skip"
+	actionPause  string = "pause"
+	actionCont   string = "cont"
+	actionOutput string = "output"
+)
+
 // Result is a container for all Packages and their Tests
 type Result struct {
 	Packages []*Package
@@ -9,47 +20,62 @@ type Result struct {
 
 // Package which are contains Tests
 type Package struct {
-	Name  string
-	Tests []*Test
+	Name    string
+	Action  string
+	Elapsed float64
+	Tests   []*Test
 }
 
 func (p *Package) String() string {
-	return fmt.Sprintf("%s - %v", p.Name, len(p.Tests))
+	return fmt.Sprintf("%s -> %s - %v (%v)", p.Name, p.Action, len(p.Tests), p.Elapsed)
 }
 
 // Test with Action and their Result
 type Test struct {
-	Name    string
-	Action  string
-	Result  string
-	Elapsed float64
+	Name   string
+	Action string
+	Result string
 }
 
 func (t Test) String() string {
-	return fmt.Sprintf("%s: %s -> %s (%v)", t.Name, t.Action, t.Result, t.Elapsed)
+	return fmt.Sprintf("%s: %s -> %s", t.Name, t.Action, t.Result)
 }
 
 // Handle the json-byte-stream and interprete it to a result
 func Handle(b []byte) (r Result, err error) {
-	return r, Parse(b, func(e TestEvent) {
+	return r, parseF(b, func(e TestEvent) {
+
 		packg := r.getPackageByName(e.Package)
-		// create new package
-		if packg == nil {
-			packg = &Package{Name: e.Package}
-			r.Packages = append(r.Packages, packg)
+
+		// no Test means package
+		if e.Test == "" {
+			if packg.Name != e.Package {
+				panic(fmt.Sprintf("Expected package: %s, got: %s", packg.Name, e.Package))
+			}
+			packg.Action = e.Action
+			packg.Elapsed = e.Elapsed
+		} else {
+			// create a new Tests
+			if e.Action == actionRun || e.Action == actionBench {
+				test := &Test{Name: e.Test, Action: e.Action}
+				packg.Tests = append(packg.Tests, test)
+			} else if e.Action == actionPass || e.Action == actionFail || e.Action == actionSkip {
+				test := packg.getTestByName(e.Test)
+				if test == nil {
+					test = &Test{Name: e.Test, Action: "--"}
+					packg.Tests = append(packg.Tests, test)
+				}
+				// Test is to end, save the result
+				test.Result = e.Action
+			}
 		}
 
-		test := packg.getTestByName(e.Test)
-		// create a new Tests
-		if e.Test != "" && test == nil {
-			test = &Test{Name: e.Test, Action: e.Action}
-			packg.Tests = append(packg.Tests, test)
-		} else if e.Test != "" && (e.Action == actionPass || e.Action == actionFail || e.Action == actionSkip) {
-			// Test is to end, save the result
-			test.Result = e.Action
-			test.Elapsed = e.Elapsed
-		}
-	})
+	},
+		func(e TestEvent) bool {
+			// ignore all outputs
+			return e.Action == actionOutput
+		},
+	)
 }
 
 func (r *Result) getPackageByName(name string) *Package {
@@ -58,7 +84,10 @@ func (r *Result) getPackageByName(name string) *Package {
 			return p
 		}
 	}
-	return nil
+
+	packg := &Package{Name: name}
+	r.Packages = append(r.Packages, packg)
+	return packg
 }
 
 func (p *Package) getTestByName(name string) *Test {

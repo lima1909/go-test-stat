@@ -21,24 +21,6 @@ func TestFail(t *testing.T) {
 	}
 }
 
-func TestPercent(t *testing.T) {
-	o := New()
-	o.Tests = 10
-	r := o.Percent(2)
-	if r != 2 {
-		t.Errorf("2 != %v", r)
-	}
-}
-
-func TestPercentWithZeroTests(t *testing.T) {
-	o := New()
-	o.Tests = 0
-	r := o.Percent(2)
-	if r != 0 {
-		t.Errorf("0 != %v", r)
-	}
-}
-
 var (
 	jsonTestTaskOrganizer = `
 	{"Time":"2018-09-14T17:23:07.995803342+02:00","Action":"run","Package":"github.com/Nimsaja/TaskOrganizer/task","Test":"TestGetNextMonthForTask"}
@@ -88,20 +70,20 @@ func TestTaskOrganizer(t *testing.T) {
 		t.Errorf("no err expected: %v", err)
 	}
 
-	o := Calculate(r)
-	if o.Tests != 8 {
-		t.Errorf("Tests 8 != %v", o.Tests)
+	s := New(r)
+	if s.Tests != 8 {
+		t.Errorf("Tests 8 != %v", s.Tests)
 	}
-	if o.Pass() != 8 {
-		t.Errorf("Pass: 8 != %v", o.Pass())
+	if s.Pass != 8 {
+		t.Errorf("Pass: 8 != %v", s.Pass)
 	}
-	if o.Fail() != 0 {
-		t.Errorf("Fail: 0 != %v", o.Fail())
+	if s.Fail != 0 {
+		t.Errorf("Fail: 0 != %v", s.Fail)
 	}
-	if o.Skip() != 0 {
-		t.Errorf("Skip: 0 != %v", o.Skip())
+	if s.Skip != 0 {
+		t.Errorf("Skip: 0 != %v", s.Skip)
 	}
-	if len(o.EmptyPackages()) != 0 {
-		t.Errorf("EmptyPackages: 0 != %v", len(o.EmptyPackages()))
+	if len(s.EmptyPackages) != 0 {
+		t.Errorf("EmptyPackages: 0 != %v", len(s.EmptyPackages))
 	}
 }

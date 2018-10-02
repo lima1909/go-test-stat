@@ -20,9 +20,19 @@ type TestEvent struct {
 }
 
 type occurred func(e TestEvent)
+type filter func(e TestEvent) bool
 
-// Parse json bytes and unmarshal to TestEvents (fire func occured by every TestEvent)
-func Parse(b []byte, occ occurred) error {
+func noFilter(_ TestEvent) bool {
+	return false
+}
+
+// parse json bytes and unmarshal to TestEvents (fire func occured by every TestEvent)
+func parse(b []byte, occ occurred) error {
+	return parseF(b, occ, noFilter)
+}
+
+// parseF parse with Filter
+func parseF(b []byte, occ occurred, fltr filter) error {
 	jsonstr := strings.TrimSpace(string(b))
 	scanner := bufio.NewScanner(strings.NewReader(jsonstr))
 	scanner.Split(bufio.ScanLines)
@@ -32,7 +42,9 @@ func Parse(b []byte, occ occurred) error {
 		if err != nil {
 			return fmt.Errorf("err by parsing json: %v", err)
 		}
-		occ(event)
+		if !fltr(event) {
+			occ(event)
+		}
 	}
 	return nil
 }

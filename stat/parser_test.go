@@ -9,7 +9,7 @@ func TestParser(t *testing.T) {
 {"Time":"2018-09-11T18:00:23.085899738+02:00","Action":"output","Package":"go-test-stats/stat","Test":"TestStat","Output":"--- FAIL: TestStat (0.00s)\n"}
 `
 	count := 0
-	err := Parse([]byte(testJSONParse), func(e TestEvent) {
+	err := parse([]byte(testJSONParse), func(e TestEvent) {
 		count++
 	})
 	if err != nil {
